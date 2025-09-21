@@ -9,6 +9,7 @@ const passport = require('passport');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const isProd = process.env.NODE_ENV === 'production';
 
   // Security
   app.use(helmet());
@@ -19,7 +20,7 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   });
 
   // Global validation pipe
@@ -30,6 +31,13 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Behind a proxy/load balancer (e.g., AWS App Runner), trust the first proxy
+  // so secure cookies and protocol are handled correctly
+  const expressApp = app.getHttpAdapter().getInstance();
+  if (expressApp?.set) {
+    expressApp.set('trust proxy', 1);
+  }
 
   // Session configuration
   app.use(
@@ -43,10 +51,11 @@ async function bootstrap() {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        httpOnly: false,
-        // domain: process.env.NODE_ENV === 'production' ? 'amplifyapp.com' : 'localhost',
-        // secure: process.env.NODE_ENV === 'production',
-        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        httpOnly: true,
+        // Optionally set a cookie domain if you use a custom domain. For default service domains, omit it.
+        // domain: process.env.COOKIE_DOMAIN,
+        secure: isProd, // required for cross-site cookies
+        sameSite: isProd ? 'none' : 'lax', // allow cross-site cookie on production
       },
     }),
   );
