@@ -34,6 +34,7 @@ async function bootstrap() {
   // Session configuration
   app.use(
     session({
+      name: "connect.sid",
       secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
       resave: false,
       saveUninitialized: false,
@@ -44,6 +45,7 @@ async function bootstrap() {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       },
     }),
   );

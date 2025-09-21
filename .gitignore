@@ -141,3 +141,5 @@ dist/
 # NestJS specific
 /dist
 /node_modules
+
+/scripts

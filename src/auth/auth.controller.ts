@@ -25,8 +25,17 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req, @Response() res) {
-    const result = await this.authService.login(req.user);
-    return res.status(HttpStatus.OK).json(result);
+    // Explicitly establish a login session and save before responding
+    return req.logIn(req.user, async (err: any) => {
+      if (err) {
+        return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Login failed' });
+      }
+      // Ensure session is persisted so Set-Cookie is flushed
+      req.session.save(async () => {
+        const result = await this.authService.login(req.user);
+        return res.status(HttpStatus.OK).json(result);
+      });
+    });
   }
 
   @Post('logout')
