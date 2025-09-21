@@ -44,9 +44,9 @@ async function bootstrap() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: false,
-        domain: process.env.NODE_ENV === 'production' ? 'amplifyapp.com' : 'localhost',
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        // domain: process.env.NODE_ENV === 'production' ? 'amplifyapp.com' : 'localhost',
+        // secure: process.env.NODE_ENV === 'production',
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       },
     }),
   );
